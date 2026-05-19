@@ -1,0 +1,546 @@
+# Language Handling Rules Template
+
+Use this document to define how the AI system should handle language detection, translation, terminology preservation, multilingual retrieval, user-facing responses, and workflow-sensitive meaning.
+
+Language handling should not be left entirely to model defaults when language affects routing, eligibility, service quality, permissions, user understanding, or structured outputs.
+
+---
+
+## 1. Language Handling Overview
+
+**System name:** `[Insert system/product/service name]`
+
+**AI assistant name:** `[Insert assistant name]`
+
+**Workflow name:** `[Insert workflow name]`
+
+**Supported languages:** `[Insert supported languages]`
+
+**Default system language:** `[Insert default language]`
+
+**Document owner:** `[Insert owner/team]`
+
+**Last updated:** `[Insert date]`
+
+---
+
+## 2. Purpose of Language Handling Rules
+
+Describe why language handling rules are needed for this workflow.
+
+```text
+These language handling rules exist to...
+```
+
+Prompts:
+
+* What languages may users use?
+* What languages can the system reliably support?
+* What language should the assistant respond in?
+* What terms should never be translated?
+* When should original user wording be preserved?
+* When could translation change meaning, routing, eligibility, urgency, or risk?
+* What should happen when language detection or translation confidence is low?
+
+---
+
+## 3. Language Handling Goals
+
+The language handling system should:
+
+* detect the user’s input language when possible
+* respond in the appropriate output language
+* preserve user intent across languages
+* preserve official names, service labels, IDs, legal terms, and domain-specific terminology when required
+* distinguish translated content from original user wording when reviewability matters
+* flag uncertain translations when they affect workflow decisions
+* support multilingual retrieval when needed
+* avoid routing or eligibility errors caused by translation ambiguity
+* make language-related decisions traceable for review and diagnostics
+
+System-specific goals:
+
+* `[Goal]`
+* `[Goal]`
+* `[Goal]`
+
+---
+
+## 4. Supported Languages
+
+List the languages the system supports and the support level for each.
+
+| Language     | Support level                                     | Input supported? | Output supported? | Human review required?     | Notes     |
+| ------------ | ------------------------------------------------- | ---------------- | ----------------- | -------------------------- | --------- |
+| `[Language]` | `[Full / Partial / Experimental / Not supported]` | `[Yes / No]`     | `[Yes / No]`      | `[Yes / No / Conditional]` | `[Notes]` |
+| `[Language]` | `[Full / Partial / Experimental / Not supported]` | `[Yes / No]`     | `[Yes / No]`      | `[Yes / No / Conditional]` | `[Notes]` |
+| `[Language]` | `[Full / Partial / Experimental / Not supported]` | `[Yes / No]`     | `[Yes / No]`      | `[Yes / No / Conditional]` | `[Notes]` |
+
+Support level definitions:
+
+* **Full:** Input, output, retrieval, structured fields, and review workflows are supported.
+* **Partial:** Basic interaction is supported, but some workflow steps may require confirmation or review.
+* **Experimental:** Use with caution; language handling should be monitored closely.
+* **Not supported:** The assistant should provide a safe limitation message or route to another channel.
+
+---
+
+## 5. Language Detection Rules
+
+Define how the system detects and records the user’s input language.
+
+| Situation                             | Detection behavior | Assistant behavior | Notes     |
+| ------------------------------------- | ------------------ | ------------------ | --------- |
+| User writes in one supported language | `[Behavior]`       | `[Behavior]`       | `[Notes]` |
+| User mixes languages                  | `[Behavior]`       | `[Behavior]`       | `[Notes]` |
+| User switches languages mid-flow      | `[Behavior]`       | `[Behavior]`       | `[Notes]` |
+| Detection confidence is low           | `[Behavior]`       | `[Behavior]`       | `[Notes]` |
+| User explicitly requests a language   | `[Behavior]`       | `[Behavior]`       | `[Notes]` |
+
+Guidance:
+
+* Record detected input language in the runtime context packet.
+* Record confidence when detection may affect routing or meaning.
+* Respect explicit user language preference when supported.
+* Ask a simple clarification question when language choice affects workflow accuracy.
+
+Example runtime field:
+
+```yaml
+language_context:
+  input_language: "[Detected language]"
+  input_language_confidence: "[low | medium | high]"
+  user_language_preference: "[Preference if known]"
+```
+
+---
+
+## 6. Response Language Rules
+
+Define which language the assistant should use when responding.
+
+Default response rule:
+
+```text
+[Insert default rule. Example: Respond in the user’s input language when supported, unless the user requests another supported language or the workflow requires an official language.]
+```
+
+| Situation                           | Output language   | Assistant behavior |
+| ----------------------------------- | ----------------- | ------------------ |
+| User writes in supported language   | `[Language rule]` | `[Behavior]`       |
+| User writes in unsupported language | `[Language rule]` | `[Behavior]`       |
+| User requests translation           | `[Language rule]` | `[Behavior]`       |
+| Workflow requires official language | `[Language rule]` | `[Behavior]`       |
+| Internal reviewer output required   | `[Language rule]` | `[Behavior]`       |
+| Structured system output required   | `[Language rule]` | `[Behavior]`       |
+
+Guidance:
+
+* User-facing responses should use clear language appropriate for the user.
+* Internal structured outputs may use a standard system language if required.
+* If the user-facing response and internal record use different languages, preserve the relationship between them.
+
+---
+
+## 7. Original Text Preservation Rules
+
+Define when original user wording must be preserved.
+
+Preserve original user text when:
+
+* wording may affect interpretation, complaint handling, legal meaning, review, escalation, or evidence
+* the user reports harm, urgency, risk, or a service failure
+* translation confidence is low
+* the input contains names, addresses, IDs, service terms, or domain-specific terms
+* the system generates an internal structured record from user-provided language
+* human review may be required
+
+Original text format:
+
+```yaml
+original_user_text:
+  language: "[Language]"
+  text: "[Original text]"
+  preservation_reason: "[Reason]"
+```
+
+If translated text is also used:
+
+```yaml
+translated_user_text:
+  source_language: "[Language]"
+  target_language: "[Language]"
+  translated_text: "[Translation]"
+  translation_confidence: "[low | medium | high]"
+  review_required: false
+```
+
+---
+
+## 8. Translation Rules
+
+Define when translation is allowed, required, or restricted.
+
+| Translation situation                       | Allowed?                   | Required?                  | Human review needed?       | Notes     |
+| ------------------------------------------- | -------------------------- | -------------------------- | -------------------------- | --------- |
+| User-facing answer                          | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Notes]` |
+| Internal summary                            | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Notes]` |
+| Structured record fields                    | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Notes]` |
+| Legal, policy, or compliance-sensitive text | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Notes]` |
+| Emergency, risk, or safety report           | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Notes]` |
+| Official service terms                      | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Yes / No / Conditional]` | `[Notes]` |
+
+Guidance:
+
+* Translation should preserve meaning, not just literal wording.
+* Do not translate official terms that must remain unchanged.
+* Mark translated text when reviewability matters.
+* Flag uncertain translation when it affects routing, eligibility, urgency, risk, or user rights.
+* Use human review when translation uncertainty could affect a material outcome.
+
+---
+
+## 9. Terms Not to Translate
+
+List terms, names, labels, or IDs that should remain unchanged.
+
+| Term     | Reason not to translate | Display rule                                            | Notes     |
+| -------- | ----------------------- | ------------------------------------------------------- | --------- |
+| `[Term]` | `[Reason]`              | `[Keep original / show bilingual / use official label]` | `[Notes]` |
+| `[Term]` | `[Reason]`              | `[Keep original / show bilingual / use official label]` | `[Notes]` |
+| `[Term]` | `[Reason]`              | `[Keep original / show bilingual / use official label]` | `[Notes]` |
+
+Examples:
+
+* official service names
+* department names
+* program names
+* case IDs
+* application IDs
+* policy names
+* legal terms
+* product names
+* place names
+* technical terms
+
+---
+
+## 10. Official Terminology Rules
+
+Define how the assistant should handle official terms, labels, categories, and service names.
+
+The assistant should:
+
+* use official terminology when referring to system-defined categories, services, policies, or statuses
+* avoid inventing category names
+* preserve IDs, names, and official labels exactly when required
+* distinguish user wording from official classification language
+* explain official terms in user-friendly language when helpful
+
+Example:
+
+```yaml
+terminology_mapping:
+  user_phrase: "[User wording]"
+  official_term: "[Official term]"
+  mapping_confidence: "[low | medium | high]"
+  requires_confirmation: false
+```
+
+---
+
+## 11. Multilingual Retrieval Rules
+
+Define how retrieval should work across languages.
+
+Retrieval may need to account for:
+
+* user input language
+* source document language
+* official system language
+* translated search queries
+* multilingual synonyms
+* transliteration
+* local terminology
+* spelling variations
+* mixed-language input
+
+| Retrieval situation                         | Retrieval behavior | Notes     |
+| ------------------------------------------- | ------------------ | --------- |
+| User language matches source language       | `[Behavior]`       | `[Notes]` |
+| User language differs from source language  | `[Behavior]`       | `[Notes]` |
+| Query contains official term                | `[Behavior]`       | `[Notes]` |
+| Query contains informal term                | `[Behavior]`       | `[Notes]` |
+| Query requires transliteration              | `[Behavior]`       | `[Notes]` |
+| Retrieval results conflict across languages | `[Behavior]`       | `[Notes]` |
+
+Guidance:
+
+* Preserve original query terms when helpful.
+* Add translated or mapped terms only when allowed.
+* Label retrieved context language.
+* Do not assume translated retrieval results are equivalent without confidence checks.
+* Escalate or ask for clarification when multilingual retrieval ambiguity affects workflow decisions.
+
+Example retrieved context language fields:
+
+```yaml
+retrieved_context:
+  - source: "[Source]"
+    source_language: "[Language]"
+    query_language: "[Language]"
+    translated_query_used: true
+    translation_confidence: "[low | medium | high]"
+```
+
+---
+
+## 12. Transliteration Rules
+
+Define how transliteration should be handled when users type names, places, IDs, or terms in another script.
+
+Examples of situations requiring transliteration rules:
+
+* Arabic place names written in Latin characters
+* names with multiple accepted spellings
+* service names typed phonetically
+* IDs or codes mixed with text
+* user-provided addresses
+
+| Situation                                             | Assistant behavior | Confirmation needed?       |
+| ----------------------------------------------------- | ------------------ | -------------------------- |
+| Name has multiple possible spellings                  | `[Behavior]`       | `[Yes / No / Conditional]` |
+| Location may map to more than one official place name | `[Behavior]`       | `[Yes / No / Conditional]` |
+| User-provided ID includes ambiguous characters        | `[Behavior]`       | `[Yes / No / Conditional]` |
+| Informal spelling maps to official term               | `[Behavior]`       | `[Yes / No / Conditional]` |
+
+Guidance:
+
+* Preserve the user’s original spelling.
+* Map to official spelling only when confidence is sufficient.
+* Ask for confirmation when ambiguity affects routing, eligibility, identity, location, or records.
+
+---
+
+## 13. Language Ambiguity Rules
+
+Define what happens when language or meaning is ambiguous.
+
+Ambiguity may occur when:
+
+* a phrase has multiple meanings
+* a translated term maps to multiple categories
+* the user uses idioms, slang, dialect, or informal wording
+* a service term has no direct translation
+* a location, name, or ID is unclear
+* user intent depends on cultural or local context
+
+| Ambiguity type                              | Assistant behavior | Escalation or review needed? |
+| ------------------------------------------- | ------------------ | ---------------------------- |
+| Multiple possible request categories        | `[Behavior]`       | `[Yes / No / Conditional]`   |
+| Unclear urgency                             | `[Behavior]`       | `[Yes / No / Conditional]`   |
+| Unclear location or entity name             | `[Behavior]`       | `[Yes / No / Conditional]`   |
+| Low-confidence translation                  | `[Behavior]`       | `[Yes / No / Conditional]`   |
+| Dialect or informal wording affects meaning | `[Behavior]`       | `[Yes / No / Conditional]`   |
+
+Default guidance:
+
+* Ask a targeted clarification question when ambiguity affects the workflow outcome.
+* Proceed with a labeled assumption only when the workflow allows it.
+* Preserve original wording for review.
+* Do not silently collapse ambiguous terms into a single official category.
+
+---
+
+## 14. User-Facing Explanation Rules
+
+Define how the assistant should explain language-related limitations or clarifications.
+
+The assistant should explain language issues when:
+
+* translation confidence is low
+* a term may have multiple meanings
+* the user’s wording affects routing or eligibility
+* an official term must be preserved
+* human review is needed due to language ambiguity
+
+Preferred explanation patterns:
+
+```text
+I want to make sure I route this correctly. When you say “[term],” do you mean [option A] or [option B]?
+```
+
+```text
+I’ll keep your original wording in the case record and also include a translated summary for review.
+```
+
+```text
+This term may map to more than one service category, so I need one clarification before proceeding.
+```
+
+Avoid:
+
+* blaming the user’s language
+* saying the system “does not understand” when a more specific explanation is possible
+* exposing internal classification logic unnecessarily
+* over-explaining translation mechanics
+
+---
+
+## 15. Structured Output Language Rules
+
+Define how language should appear in structured outputs.
+
+Structured outputs may need:
+
+* original user text
+* translated summary
+* official category labels
+* language confidence
+* terms preserved unchanged
+* review flags
+* translation notes
+
+Example structure:
+
+```yaml
+language_context:
+  original_user_text:
+    language: "[Language]"
+    text: "[Original text]"
+  translated_summary:
+    language: "[Language]"
+    text: "[Translated summary]"
+    confidence: "[low | medium | high]"
+  official_terms_preserved:
+    - "[Term]"
+  language_review_required: false
+  language_notes:
+    - "[Note]"
+```
+
+---
+
+## 16. Language Review and Escalation Rules
+
+Define when language issues require human review or escalation.
+
+Human review may be required when:
+
+* translation uncertainty affects routing, eligibility, urgency, risk, or user rights
+* user wording includes legal, medical, financial, compliance, or safety-sensitive claims
+* the assistant cannot confidently map informal wording to official categories
+* multilingual retrieval returns conflicting results
+* the user disputes the interpretation
+* official terminology is ambiguous or unavailable
+
+| Trigger     | Assistant behavior | Review owner | Output required |
+| ----------- | ------------------ | ------------ | --------------- |
+| `[Trigger]` | `[Behavior]`       | `[Owner]`    | `[Output]`      |
+| `[Trigger]` | `[Behavior]`       | `[Owner]`    | `[Output]`      |
+| `[Trigger]` | `[Behavior]`       | `[Owner]`    | `[Output]`      |
+
+---
+
+## 17. Runtime Language Context Fields
+
+Include language context in the runtime packet when language affects behavior, output, retrieval, routing, eligibility, or review.
+
+Recommended fields:
+
+```yaml
+language_context:
+  input_language: "[Detected language]"
+  input_language_confidence: "[low | medium | high]"
+  output_language: "[Expected output language]"
+  user_language_preference: "[Language if known]"
+  translation_required: false
+  translated_query_used: false
+  preserve_original_user_text: true
+  official_terms_preserved:
+    - "[Term]"
+  terms_not_to_translate:
+    - "[Term]"
+  uncertain_translation_notes:
+    - "[Note]"
+  language_review_required: false
+```
+
+---
+
+## 18. Language Failure Patterns to Test
+
+Test for these language-related failure patterns:
+
+* assistant responds in the wrong language
+* assistant translates official terms that should remain unchanged
+* assistant loses user intent during translation
+* assistant fails to preserve original user wording when review is needed
+* assistant misclassifies a request due to translation ambiguity
+* assistant ignores dialect, slang, transliteration, or informal wording
+* assistant retrieves only in one language when multilingual retrieval is needed
+* assistant treats translated retrieval results as equivalent without confidence checks
+* assistant fails to flag low-confidence translation
+* assistant exposes restricted information through translated summaries
+* assistant produces structured output without language metadata
+* assistant over-asks language questions when meaning is already clear
+
+System-specific failure patterns:
+
+* `[Failure pattern]`
+* `[Failure pattern]`
+* `[Failure pattern]`
+
+---
+
+## 19. Language Handling Review Checklist
+
+Before approving language handling rules, check:
+
+* Are supported languages and support levels defined?
+* Is the default response language rule clear?
+* Are official terms and non-translatable terms listed?
+* Are original text preservation rules defined?
+* Are translation confidence and review rules defined?
+* Are multilingual retrieval rules defined?
+* Are transliteration rules needed and included?
+* Are language-related escalation triggers defined?
+* Are structured outputs preserving language context where needed?
+* Are language failure patterns included in testing?
+
+---
+
+## 20. Open Questions
+
+List unresolved language handling decisions.
+
+| Question     | Why it matters | Owner     | Status                        |
+| ------------ | -------------- | --------- | ----------------------------- |
+| `[Question]` | `[Impact]`     | `[Owner]` | `[Open / Pending / Resolved]` |
+| `[Question]` | `[Impact]`     | `[Owner]` | `[Open / Pending / Resolved]` |
+| `[Question]` | `[Impact]`     | `[Owner]` | `[Open / Pending / Resolved]` |
+
+---
+
+## 21. Related Documents
+
+Link to related architecture documents.
+
+* `[AI Design Principles]`
+* `[AI Assistant Behavior Spec]`
+* `[Workflow Assistant Behavior Spec]`
+* `[Context Architecture Spec]`
+* `[Runtime Context Template]`
+* `[Context Assembly Rules]`
+* `[Workflow Routing Rules]`
+* `[Related Record Context Rules]`
+* `[Testing & Diagnostics Spec]`
+* `[Conversation Flows]`
+
+---
+
+## 22. Change Log
+
+| Date     | Change          | Owner     |
+| -------- | --------------- | --------- |
+| `[Date]` | `[Change made]` | `[Owner]` |
